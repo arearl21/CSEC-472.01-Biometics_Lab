@@ -40,11 +40,13 @@ def load_images(dataset_path, train_split=1500):
 
             # Check if both reference and subject files exist
             if os.path.exists(ref_img_path) and os.path.exists(sub_img_path):
+                ref_img = cv2.imread(ref_img_path, cv2.IMREAD_GRAYSCALE)
+                sub_img = cv2.imread(sub_img_path, cv2.IMREAD_GRAYSCALE)
                 # Split into train and test sets based on train_split threshold
                 if int(file_index) <= train_split:
-                    train_data.append((ref_img_path, sub_img_path))
+                    train_data.append((ref_img, sub_img))
                 else:
-                    test_data.append((ref_img_path, sub_img_path))
+                    test_data.append((ref_img, sub_img))
 
     return train_data, test_data
 
