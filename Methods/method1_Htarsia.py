@@ -69,17 +69,7 @@ def preprocess_image(image):
     skeleton = cv2.ximgproc.thinning(binary_image)
     
     return skeleton
-
-    # Check if the image is loaded correctly
-    if image is None:
-        print("Error: Could not load image.")
-    else:
-        skeleton_image = preprocess_image(image)
-        cv2.imshow("Skeleton", skeleton_image)
-        cv2.waitKey(0)
-        cv2.destroyAllWindows()
-
-
+    
 # Minutiae Detection
 def detect_minutiae(skeleton):
     minutiae_points = []
