@@ -5,7 +5,7 @@ from sklearn.metrics import roc_curve, auc
 import matplotlib.pyplot as plt
 
 # Load Dataset
-def load_images(dataset_path, train_split=1500):
+def load_images(/home/kali/fingerprints, train_split=1500):
     """
     Load images and split into TRAIN and TEST sets.
     """
