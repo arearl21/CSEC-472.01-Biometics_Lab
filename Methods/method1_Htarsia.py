@@ -29,7 +29,7 @@ def load_images(dataset_path, train_split=1500):
         # Process each matching file
         for ref_file in ref_files:
             # Extract the index part of the filename (e.g., 0001, 0002, 0010, etc.)
-            file_index = ref_file.split('_')[0]  # This will give you '0001', '0002', etc.
+            file_index = ref_file.split('_')[0].replace('f','')  # This will give you '0001', '0002', etc.
 
             # Create corresponding sub image filename by replacing 'f' with 's'
             sub_file = ref_file.replace('f', 's')
