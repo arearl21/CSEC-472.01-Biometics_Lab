@@ -49,9 +49,6 @@ def load_images(dataset_path, train_split=1500):
     return train_data, test_data
 
 # Preprocess Image: Skeletonization
-import cv2
-import numpy as np
-
 def preprocess_image(image):
     """
     Preprocess the fingerprint image: binarize and skeletonize.
@@ -71,18 +68,14 @@ def preprocess_image(image):
     
     return skeleton
 
-# Example usage
-image_path = "path_to_your_image.png"
-image = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
-
-# Check if the image is loaded correctly
-if image is None:
-    print("Error: Could not load image.")
-else:
-    skeleton_image = preprocess_image(image)
-    cv2.imshow("Skeleton", skeleton_image)
-    cv2.waitKey(0)
-    cv2.destroyAllWindows()
+    # Check if the image is loaded correctly
+    if image is None:
+        print("Error: Could not load image.")
+    else:
+        skeleton_image = preprocess_image(image)
+        cv2.imshow("Skeleton", skeleton_image)
+        cv2.waitKey(0)
+        cv2.destroyAllWindows()
 
 
 # Minutiae Detection
