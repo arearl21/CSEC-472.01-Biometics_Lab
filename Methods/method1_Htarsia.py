@@ -5,7 +5,7 @@ from sklearn.metrics import roc_curve, auc
 import matplotlib.pyplot as plt
 
 # Load Dataset
-def load_images(/home/kali/fingerprints/sd04/png_txt, train_split=1500):
+def load_images(dataset_path, train_split=1500):
     """
     Load images from multiple directories (figs_0, figs_1, ..., figs_7) and split into TRAIN and TEST sets.
     """
@@ -106,7 +106,7 @@ def evaluate_system(data, threshold):
 # Main Execution
 if __name__ == "__main__":
     # Step 1: Load Dataset
-    dataset_path = "path_to_dataset"
+    dataset_path = "/home/kali/fingerprints/sd04/png_txt"
     train_data, test_data = load_images(dataset_path)
 
     # Step 2: Process Train Data
