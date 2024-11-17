@@ -49,10 +49,41 @@ def load_images(dataset_path, train_split=1500):
     return train_data, test_data
 
 # Preprocess Image: Skeletonization
+import cv2
+import numpy as np
+
 def preprocess_image(image):
+    """
+    Preprocess the fingerprint image: binarize and skeletonize.
+    """
+    if image is None:
+        raise ValueError("Image not loaded properly. Please check the file path.")
+    
+    # Ensure the image is in grayscale
+    if len(image.shape) != 2:
+        raise ValueError("Image must be grayscale.")
+    
+    # Threshold to binary
     _, binary_image = cv2.threshold(image, 127, 255, cv2.THRESH_BINARY)
+    
+    # Skeletonize the binary image using OpenCV's thinning function (if available)
     skeleton = cv2.ximgproc.thinning(binary_image)
+    
     return skeleton
+
+# Example usage
+image_path = "path_to_your_image.png"
+image = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
+
+# Check if the image is loaded correctly
+if image is None:
+    print("Error: Could not load image.")
+else:
+    skeleton_image = preprocess_image(image)
+    cv2.imshow("Skeleton", skeleton_image)
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()
+
 
 # Minutiae Detection
 def detect_minutiae(skeleton):
