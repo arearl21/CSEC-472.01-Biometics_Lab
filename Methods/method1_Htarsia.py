@@ -10,27 +10,40 @@ def load_images(dataset_path, train_split=1500):
     """
     train_data, test_data = [], []
     
+    # Loop through each figs_X directory (where X is 0-7)
     for dir_index in range(8):
         dir_path = os.path.join(dataset_path, f"figs_{dir_index}")
         
+        # Ensure the directory exists
         if not os.path.exists(dir_path):
             print(f"Directory {dir_path} does not exist.")
             continue
 
-        for i in range(1, 2001):  # Assuming you have 2000 pairs of images
-            ref_img_path = os.path.join(dir_path, f"f{i:04d}.png")
-            sub_img_path = os.path.join(dir_path, f"s{i:04d}.png")
+        # List all files in the directory
+        files = os.listdir(dir_path)
 
-            if not os.path.exists(ref_img_path) or not os.path.exists(sub_img_path):
-                continue
+        # Filter for files starting with 'f' and ending with '.png'
+        ref_files = [f for f in files if re.match(r'^f\d{4}(_\d{2})?\.png$', f)]
 
-            ref_img = cv2.imread(ref_img_path, cv2.IMREAD_GRAYSCALE)
-            sub_img = cv2.imread(sub_img_path, cv2.IMREAD_GRAYSCALE)
-            
-            if i <= train_split:
-                train_data.append((ref_img, sub_img))
-            else:
-                test_data.append((ref_img, sub_img))
+        # Process each matching file
+        for ref_file in ref_files:
+            # Extract the index part of the filename (e.g., 0001, 0002, 0010, etc.)
+            file_index = ref_file.split('_')[0]  # This will give you '0001', '0002', etc.
+
+            # Create corresponding sub image filename by replacing 'f' with 's'
+            sub_file = ref_file.replace('f', 's')
+
+            # Construct full file paths
+            ref_img_path = os.path.join(dir_path, ref_file)
+            sub_img_path = os.path.join(dir_path, sub_file)
+
+            # Check if both reference and subject files exist
+            if os.path.exists(ref_img_path) and os.path.exists(sub_img_path):
+                # Split into train and test sets based on train_split threshold
+                if int(file_index) <= train_split:
+                    train_data.append((ref_img_path, sub_img_path))
+                else:
+                    test_data.append((ref_img_path, sub_img_path))
 
     return train_data, test_data
 
