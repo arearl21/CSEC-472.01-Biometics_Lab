@@ -5,22 +5,39 @@ from sklearn.metrics import roc_curve, auc
 import matplotlib.pyplot as plt
 
 # Load Dataset
-def load_images(/home/kali/fingerprints, train_split=1500):
+def load_images(/home/kali/fingerprints/sd04/png_txt, train_split=1500):
     """
-    Load images and split into TRAIN and TEST sets.
+    Load images from multiple directories (figs_0, figs_1, ..., figs_7) and split into TRAIN and TEST sets.
     """
     train_data, test_data = [], []
-    for i in range(1, 2001):
-        ref_img_path = f"{dataset_path}/f{i:04d}.png"
-        sub_img_path = f"{dataset_path}/s{i:04d}.png"
-        if not os.path.exists(ref_img_path) or not os.path.exists(sub_img_path):
+    
+    # Loop through each figs_X directory (where X is 0-7)
+    for dir_index in range(8):
+        dir_path = os.path.join(dataset_path, f"figs_{dir_index}")
+        
+        # Ensure the directory exists
+        if not os.path.exists(dir_path):
+            print(f"Directory {dir_path} does not exist.")
             continue
-        ref_img = cv2.imread(ref_img_path, cv2.IMREAD_GRAYSCALE)
-        sub_img = cv2.imread(sub_img_path, cv2.IMREAD_GRAYSCALE)
-        if i <= train_split:
-            train_data.append((ref_img, sub_img))
-        else:
-            test_data.append((ref_img, sub_img))
+
+        # Loop through the files in the current figs_X directory
+        for i in range(1, 2001):  # Assuming you have 2000 pairs of images
+            ref_img_path = os.path.join(dir_path, f"f{i:04d}.png")
+            sub_img_path = os.path.join(dir_path, f"s{i:04d}.png")
+
+            # Check if both files exist
+            if not os.path.exists(ref_img_path) or not os.path.exists(sub_img_path):
+                continue
+
+            ref_img = cv2.imread(ref_img_path, cv2.IMREAD_GRAYSCALE)
+            sub_img = cv2.imread(sub_img_path, cv2.IMREAD_GRAYSCALE)
+            
+            # Split into train and test sets based on train_split threshold
+            if i <= train_split:
+                train_data.append((ref_img, sub_img))
+            else:
+                test_data.append((ref_img, sub_img))
+
     return train_data, test_data
 
 # Preprocess Image: Skeletonization
