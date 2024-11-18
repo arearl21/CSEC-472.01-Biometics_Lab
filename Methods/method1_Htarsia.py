@@ -140,7 +140,7 @@ if __name__ == "__main__":
     train_data, test_data = load_images(dataset_path)
 
     # Step 1: Set thresholds to evaluate
-    thresholds = np.arange(1, 51, 1)  # You can change this range as needed
+    thresholds = np.arange(1, 2, 1)  # You can change this range as needed
 
     # Step 2: Evaluate on TEST Set
     results_df = evaluate_system(test_data, thresholds)
