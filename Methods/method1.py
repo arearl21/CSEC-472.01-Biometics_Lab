@@ -49,23 +49,45 @@ def extract_sift_features(image_path):
     keypoints, descriptors = sift.detectAndCompute(image, None)
     
     if descriptors is None:
-        return np.zeros((1, 128))  # Return a zero feature if no descriptors are found
-    return descriptors
+        return [], []  # Return empty keypoints and descriptors if not found
+    return keypoints, descriptors
 
-# Compare Images Using SIFT Features
+# Match Descriptors Using FLANN
+def match_descriptors(descriptors1, descriptors2):
+    """
+    Match descriptors between two images using FLANN-based matcher.
+    """
+    # FLANN parameters
+    index_params = dict(algorithm=1, trees=10)  # FLANN-based index parameters (KDTREE)
+    search_params = dict(checks=50)  # Search parameters (number of times the trees are traversed)
+    
+    flann = cv2.FlannBasedMatcher(index_params, search_params)
+    matches = flann.knnMatch(descriptors1, descriptors2, k=2)
+    
+    # Apply Lowe's ratio test to filter good matches
+    good_matches = []
+    for m, n in matches:
+        if m.distance < 0.75 * n.distance:  # Lowe's ratio test threshold
+            good_matches.append(m)
+    
+    return good_matches
+
+# Compare Images Using FLANN Matches
 def compare_images_sift(image1_path, image2_path):
     """
-    Compare two images using SIFT descriptors and cosine similarity.
+    Compare two images using SIFT descriptors and FLANN-based matching.
     """
-    features1 = extract_sift_features(image1_path)
-    features2 = extract_sift_features(image2_path)
+    keypoints1, descriptors1 = extract_sift_features(image1_path)
+    keypoints2, descriptors2 = extract_sift_features(image2_path)
     
-    # Compute the mean descriptor for each image
-    mean_feature1 = np.mean(features1, axis=0).reshape(1, -1)
-    mean_feature2 = np.mean(features2, axis=0).reshape(1, -1)
+    if len(descriptors1) == 0 or len(descriptors2) == 0:
+        return 0.0  # If no descriptors found, return similarity 0
     
-    similarity = cosine_similarity(mean_feature1, mean_feature2)[0][0]
-    return similarity
+    good_matches = match_descriptors(descriptors1, descriptors2)
+    
+    # Calculate similarity score as the ratio of good matches to total keypoints
+    similarity_score = len(good_matches) / min(len(keypoints1), len(keypoints2))
+    return similarity_score
 
 # Evaluate System
 def evaluate_system_sift(data, thresholds):
@@ -73,6 +95,7 @@ def evaluate_system_sift(data, thresholds):
     Evaluate the system for False Accept Rate (FAR), False Reject Rate (FRR), and Equal Error Rate (EER) over multiple thresholds.
     """
     results = []
+    num = 0
     for threshold in thresholds:
         false_accepts = 0
         false_rejects = 0
@@ -93,7 +116,12 @@ def evaluate_system_sift(data, thresholds):
                     false_rejects += 1
                 else:  # Impostor match correctly rejected
                     impostor_matches += 1
-        print("another down")
+        
+        num += 1
+        print("")
+        print(str(num) + " done")
+        print("")
+        
         far = false_accepts / (false_accepts + impostor_matches) if (false_accepts + impostor_matches) > 0 else 0
         frr = false_rejects / (false_rejects + genuine_matches) if (false_rejects + genuine_matches) > 0 else 0
         eer = far if np.abs(far - frr) < 0.01 else (far + frr) / 2
@@ -114,7 +142,7 @@ if __name__ == "__main__":
     train_data, test_data = load_images(dataset_path)
 
     # Set thresholds for evaluation
-    thresholds = np.linspace(.90, .95, num=10)  # Adjust range as needed
+    thresholds = np.linspace(0.0055, 0.0090, num=20)  # Adjust range as needed
 
     # Evaluate on TEST Set
     results_df = evaluate_system_sift(test_data, thresholds)
