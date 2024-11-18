@@ -3,6 +3,7 @@ import re
 import cv2
 import numpy as np
 import pandas as pd
+from scipy.spatial import KDTree
 
 # Load Dataset
 def load_images(dataset_path, train_split=1500):
@@ -83,13 +84,23 @@ def detect_minutiae(skeleton):
 
 # Minutiae Matching
 def compare_minutiae(minutiae1, minutiae2):
+    # Separate coordinates and types
+    coords1 = [(point[0], point[1]) for point in minutiae1]
+    coords2 = [(point[0], point[1]) for point in minutiae2]
+
+    # Create KD-trees for efficient nearest-neighbor search
+    tree1 = KDTree(coords1)
+    tree2 = KDTree(coords2)
+
     distances = []
-    for point1 in minutiae1:
-        for point2 in minutiae2:
-            if point1[2] == point2[2]:  
-                distance = np.sqrt((point1[0] - point2[0])**2 + (point1[1] - point2[1])**2)
-                distances.append(distance)
+    for point2 in coords2:
+        # Find nearest point in minutiae1
+        dist, idx = tree1.query(point2)
+        # Check if the types match
+        if minutiae1[idx][2] == minutiae2[coords2.index(point2)][2]:
+            distances.append(dist)
     return np.mean(distances) if distances else float('inf')
+
 
 # Evaluate Performance: FAR, FRR, and EER
 def evaluate_system(data, thresholds):
