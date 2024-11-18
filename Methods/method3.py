@@ -124,7 +124,7 @@ if __name__ == "__main__":
     train_data, test_data = load_images(dataset_path)
 
     # Set thresholds for evaluation
-    thresholds = np.linspace(0.94, 0.955, num=3)  # Adjust range as needed
+    thresholds = np.linspace(0.94, 0.955, num=10)  # Adjust range as needed
 
     # Evaluate on TEST Set
     results_df = evaluate_system_mse(test_data, thresholds)
