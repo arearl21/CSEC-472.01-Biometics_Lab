@@ -58,10 +58,6 @@ def preprocess_image(image):
     if image is None:
         raise ValueError("Image not loaded properly. Please check the file path.")
     
-    # Ensure the image is in grayscale
-    if len(image.shape) != 2:
-        raise ValueError("Image must be grayscale.")
-    
     # Threshold to binary
     _, binary_image = cv2.threshold(image, 127, 255, cv2.THRESH_BINARY)
     
