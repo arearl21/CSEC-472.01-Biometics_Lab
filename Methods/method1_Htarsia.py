@@ -147,6 +147,3 @@ if __name__ == "__main__":
     summary = results_df.describe().loc[["min", "max", "mean"]]
     print("Evaluation Summary (FAR, FRR, EER):")
     print(summary)
-
-    # Optional: Save to CSV
-    results_df.to_csv('frr_far_eer_results.csv', index=False)
