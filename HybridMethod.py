@@ -42,13 +42,13 @@ def load_images(dataset_path, train_split=1500):
 
             # Check if both reference and subject files exist
             if os.path.exists(ref_img_path) and os.path.exists(sub_img_path):
-                ref_img = cv2.imread(ref_img_path, cv2.IMREAD_GRAYSCALE)
-                sub_img = cv2.imread(sub_img_path, cv2.IMREAD_GRAYSCALE)
+                #ref_img = cv2.imread(ref_img_path, cv2.IMREAD_GRAYSCALE)
+                #sub_img = cv2.imread(sub_img_path, cv2.IMREAD_GRAYSCALE)
                 # Split into train and test sets based on train_split threshold
                 if int(file_index) <= train_split:
-                    train_data.append((ref_img, sub_img))
+                    train_data.append((ref_img_path, sub_img_path))
                 else:
-                    test_data.append((ref_img, sub_img))
+                    test_data.append((ref_img_path, sub_img_path))
 
     return train_data, test_data
 
@@ -68,7 +68,7 @@ def extract_sift_features(image_path):
     
     if descriptors is None:
         return np.zeros((1, 128))  # Return a zero feature if no descriptors are found
-    return descriptors
+    return keypoints, descriptors
 
 # Match Descriptors Using FLANN
 def match_descriptors(descriptors1, descriptors2):
@@ -99,7 +99,7 @@ def preprocess_image(image):
     """
     if image is None:
         raise ValueError("Image not loaded properly. Please check the file path.")
-    
+
     # Threshold to binary
     _, binary_image = cv2.threshold(image, 127, 255, cv2.THRESH_BINARY)
     
@@ -171,15 +171,14 @@ def compare_m3(img1,img2):
     return similarity_score
 
 #Returns True or False based on the three methods
-def majority_voting(img1, img2):
+def majority_voting(img1, img2, img1_path, img2_path):
     # Run all three methods
-    #decision1 = compare_m1(img1,img2)
-    decision2 = compare_m2(img1,img2)
-    #decision3 = compare_m3(img1,img2)
+    decision1 = compare_m1(img1,img2)
+    decision2 = compare_m2(img1_path,img2_path)
+    decision3 = compare_m3(img1,img2)
 
     # Collect decisions in a list
-    #decisions = [decision1, decision2, decision3]
-    decisions = [decision2]
+    decisions = [decision1, decision2, decision3]
 
     # Count occurrences of each decision
     from collections import Counter
@@ -192,10 +191,10 @@ def majority_voting(img1, img2):
 
 if __name__ == "__main__":
     #Change Based on user
-    dataset_path = "C:\\Users\\Jacob Patterson\\College Word Documents\\Year 5\\472_Lab4\\NISTSpecialDatabase4GrayScaleImagesofFIGS\\NISTSpecialDatabase4GrayScaleImagesofFIGS\\sd04\\png_txt"
+    dataset_path = r"C:\Users\Jacob Patterson\College Word Documents\Year 5\472_Lab4\NISTSpecialDatabase4GrayScaleImagesofFIGS\NISTSpecialDatabase4GrayScaleImagesofFIGS\sd04\png_txt"
     train_data, test_data = load_images(dataset_path)
 
-    thresholds = np.linspace(0.0055, 0.0090, num=1)  # Adjust range as needed
+    thresholds = np.linspace(0.0055, 0.0075, num=5)  # Adjust range as needed
 
     results = []
     num = 0
@@ -207,13 +206,15 @@ if __name__ == "__main__":
 
     #Get images
     for ref_img, sub_img in test_data:
-        ref_skeleton = preprocess_image(ref_img)
-        sub_skeleton = preprocess_image(sub_img)
-        score = majority_voting(ref_skeleton, sub_skeleton)
+        ref_unproc = cv2.imread(ref_img, cv2.IMREAD_GRAYSCALE)
+        sub_unproc = cv2.imread(sub_img, cv2.IMREAD_GRAYSCALE)
+        ref_skeleton = preprocess_image(ref_unproc)
+        sub_skeleton = preprocess_image(sub_unproc)
+        score = majority_voting(ref_img, sub_img, ref_skeleton, sub_skeleton)
 
         if score < threshold:
             if ref_img is sub_img:  # Genuine match
-              genuine_matches += 1
+                genuine_matches += 1
             else:  # Impostor match
                 false_accepts += 1
         else:
