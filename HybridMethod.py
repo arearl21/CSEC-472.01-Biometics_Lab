@@ -173,12 +173,13 @@ def compare_m3(img1,img2):
 #Returns True or False based on the three methods
 def majority_voting(img1, img2):
     # Run all three methods
-    decision1 = compare_m1(img1,img2)
+    #decision1 = compare_m1(img1,img2)
     decision2 = compare_m2(img1,img2)
-    decision3 = compare_m3(img1,img2)
+    #decision3 = compare_m3(img1,img2)
 
     # Collect decisions in a list
-    decisions = [decision1, decision2, decision3]
+    #decisions = [decision1, decision2, decision3]
+    decisions = [decision2]
 
     # Count occurrences of each decision
     from collections import Counter
@@ -193,6 +194,16 @@ if __name__ == "__main__":
     #Change Based on user
     dataset_path = "C:\\Users\\Jacob Patterson\\College Word Documents\\Year 5\\472_Lab4\\NISTSpecialDatabase4GrayScaleImagesofFIGS\\NISTSpecialDatabase4GrayScaleImagesofFIGS\\sd04\\png_txt"
     train_data, test_data = load_images(dataset_path)
+
+    thresholds = np.linspace(0.0055, 0.0090, num=1)  # Adjust range as needed
+
+    results = []
+    num = 0
+    for threshold in thresholds:
+        false_accepts = 0
+        false_rejects = 0
+        genuine_matches = 0
+        impostor_matches = 0
 
     #Get images
     for ref_img, sub_img in test_data:
