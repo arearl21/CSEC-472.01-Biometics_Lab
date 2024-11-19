@@ -137,22 +137,24 @@ def compute_mse(image1_path, image2_path):
 
 #======== Compare Each Method ========
 
-def compareM1(img1,img2):
+def compare_m1(img1,img2):
     """
-    Compare two images using SIFT descriptors and cosine similarity.
+    Compare two images using SIFT descriptors and FLANN-based matching.
     """
-    features1 = extract_sift_features(image1_path)
-    features2 = extract_sift_features(image2_path)
+    keypoints1, descriptors1 = extract_sift_features(img1)
+    keypoints2, descriptors2 = extract_sift_features(img2)
     
-    # Compute the mean descriptor for each image
-    mean_feature1 = np.mean(features1, axis=0).reshape(1, -1)
-    mean_feature2 = np.mean(features2, axis=0).reshape(1, -1)
+    if len(descriptors1) == 0 or len(descriptors2) == 0:
+        return 0.0  # If no descriptors found, return similarity 0
     
-    similarity = cosine_similarity(mean_feature1, mean_feature2)[0][0]
-    return similarity
+    good_matches = match_descriptors(descriptors1, descriptors2)
+    
+    # Calculate similarity score as the ratio of good matches to total keypoints
+    similarity_score = len(good_matches) / min(len(keypoints1), len(keypoints2))
+    return similarity_score
 
 
-def compareM2(img1,img2):
+def compare_m2(img1,img2):
     # Resize to the same dimensions (if necessary)
     img2 = cv2.resize(img2, img1.shape[::-1])
 
@@ -160,20 +162,20 @@ def compareM2(img1,img2):
     similarity = np.corrcoef(img1.ravel(), img2.ravel())[0, 1]
     return similarity < 0.04
 
-def compareM3(img1,img2):
+def compare_m3(img1,img2):
     """
     Compare two images using Mean Squared Error (MSE).
     """
-    mse = compute_mse(image1_path, image2_path)
+    mse = compute_mse(img1, img2)
     similarity_score = 1 / (1 + mse)  # Inverse of MSE for similarity (lower MSE means higher similarity)
     return similarity_score
 
 #Returns True or False based on the three methods
 def majority_voting(img1, img2):
     # Run all three methods
-    decision1 = compareM1(img1,img2)
-    decision2 = compareM2(img1,img2)
-    decision3 = compareM3(img1,img2)
+    decision1 = compare_m1(img1,img2)
+    decision2 = compare_m2(img1,img2)
+    decision3 = compare_m3(img1,img2)
 
     # Collect decisions in a list
     decisions = [decision1, decision2, decision3]
@@ -192,7 +194,8 @@ if __name__ == "__main__":
     dataset_path = "C:\\Users\\Jacob Patterson\\College Word Documents\\Year 5\\472_Lab4\\NISTSpecialDatabase4GrayScaleImagesofFIGS\\NISTSpecialDatabase4GrayScaleImagesofFIGS\\sd04\\png_txt"
     train_data, test_data = load_images(dataset_path)
 
-    for ref_img, sub_img in data:
+    #Get images
+    for ref_img, sub_img in test_data:
         ref_skeleton = preprocess_image(ref_img)
         sub_skeleton = preprocess_image(sub_img)
         score = majority_voting(ref_skeleton, sub_skeleton)
