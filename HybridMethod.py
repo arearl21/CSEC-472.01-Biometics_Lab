@@ -70,6 +70,26 @@ def extract_sift_features(image_path):
         return np.zeros((1, 128))  # Return a zero feature if no descriptors are found
     return descriptors
 
+# Match Descriptors Using FLANN
+def match_descriptors(descriptors1, descriptors2):
+    """
+    Match descriptors between two images using FLANN-based matcher.
+    """
+    # FLANN parameters
+    index_params = dict(algorithm=1, trees=10)  # FLANN-based index parameters (KDTREE)
+    search_params = dict(checks=50)  # Search parameters (number of times the trees are traversed)
+    
+    flann = cv2.FlannBasedMatcher(index_params, search_params)
+    matches = flann.knnMatch(descriptors1, descriptors2, k=2)
+    
+    # Apply Lowe's ratio test to filter good matches
+    good_matches = []
+    for m, n in matches:
+        if m.distance < 0.75 * n.distance:  # Lowe's ratio test threshold
+            good_matches.append(m)
+    
+    return good_matches
+
 #======== Method 2 ========
 
 # Preprocess Image: Skeletonization
